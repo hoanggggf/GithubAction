@@ -1,0 +1,38 @@
+name: Job steps workflows
+
+on: 
+    workflow_dispatch:
+      
+jobs:
+    job-1: 
+        runs-on: ubuntu-22.04
+        steps:
+            - run: echo "A job consists of"
+            - run: echo "one or more steps"
+            - run: echo "which run sequentially"
+            - run: echo "within the same compute environment"
+   
+    job-2: 
+        runs-on: ubuntu-22.04
+        steps:
+            - run: echo "A job "
+
+    job-3: 
+        runs-on: ubuntu-22.04
+        steps:
+            - run: echo "Job 3 is running"
+        needs:
+            - job-1
+            - job-2
+
+    job-4: 
+        runs-on: ubuntu-22.04
+        steps:
+            - run: echo "Job 4 is running"
+        needs:
+            - job-2
+            - job-3
+
+
+          
+            
