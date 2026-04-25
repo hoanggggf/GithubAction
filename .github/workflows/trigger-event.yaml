@@ -1,0 +1,24 @@
+name: Trigger Events
+
+on: 
+    workflow_dispatch: 
+    push:
+        branches: 
+            - 'fix/*'
+        
+    pull_request: 
+        types: 
+            - opened
+            - synchronize
+            - reopened
+        paths:
+            - "feature/filters/*.md"
+            - "!feature/filters/*.txt"
+jobs:
+    echo-event: 
+        runs-on: ubuntu-22.04
+        steps:
+            - name: Dump full Json 
+              run: |
+                echo "=== $GITHUB_EVENT_NAME payload ==="
+                cat "$GITHUB_EVENT_PATH"

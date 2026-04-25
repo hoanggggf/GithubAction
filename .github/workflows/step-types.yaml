@@ -1,4 +1,4 @@
-name: Step types 
+name: Step Types 
 
 on: 
     workflow_dispatch: 

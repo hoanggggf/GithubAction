@@ -1,4 +1,4 @@
-name: Job steps workflows
+name: Job Steps Workflows
 
 on: 
     workflow_dispatch:
