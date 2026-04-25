@@ -13,6 +13,7 @@ jobs:
         runs-on: ubuntu-22.04
         steps:
           - run: print("Say Hello from hoanggggf inline python")
+            shell: python
 
     say-hello-action: 
         runs-on: ubuntu-22.04
