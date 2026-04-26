@@ -12,7 +12,7 @@ jobs:
             - name: Generate and export foo
               id: generate-foo
               run: |
-                  foo=bar 
+                  foo=hoangggf 
 
                   echo "foo=${foo}" >> "$GITHUB_OUTPUT"
 
