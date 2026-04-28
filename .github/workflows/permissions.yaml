@@ -1,0 +1,48 @@
+name: Permissions
+
+on:
+    workflow_dispatch:
+
+jobs:
+    read-only-permisison:
+        runs-on: ubuntu-22.04
+        permissions:
+            pull-requests: read
+        continue-on-error: true
+        steps:
+            - uses: actions/checkout@v3
+            - name: List the first 5 open Prs (allowed)
+              run: gh pr list --limit 5
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Attempt to add a label (expected to fail)
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: gh pr edit 1 --add-label "bug"
+
+            - name: Confirm the failure
+              if: failure()
+              run: echo "As expected, the attempt to add a label failed due to insufficient
+                  permissions"
+
+    read-write-permission:
+        runs-on: ubuntu-22.04
+        permissions:
+            pull-requests: write
+        steps:
+            - uses: actions/checkout@v3
+            - name: Attempt to add a label (expected to succeed)
+              run: gh pr list --limit 5
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+            - name: Attempt to add a label (expected to succeed)
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: gh pr edit 1 --add-label "bug"
+
+            - name: Confirm the success
+              if: success()
+              run: echo "As expected, the attempt to add a label succeeded with write
+                  permissions"
