@@ -30,6 +30,7 @@ jobs:
         runs-on: ubuntu-22.04
         permissions:
             pull-requests: write
+            issues: write
         steps:
             - uses: actions/checkout@v3
             - name: Attempt to add a label (expected to succeed)
