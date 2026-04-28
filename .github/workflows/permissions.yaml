@@ -40,9 +40,8 @@ jobs:
             - name: Attempt to add a label (expected to succeed)
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              run: gh pr edit 1 --add-label "bug"
+              run: gh pr edit 4 --add-label "bug"
 
             - name: Confirm the success
-              if: success()
-              run: echo "As expected, the attempt to add a label succeeded with write
-                  permissions"
+              if: success() 
+              run: echo "As expected, the attempt to add a label succeeded with write permissions"
