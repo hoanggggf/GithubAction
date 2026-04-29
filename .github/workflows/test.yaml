@@ -1,108 +1,108 @@
 name: Run test
 
 on:
-    push: 
-        branches:
-          - main
-        paths: 
-            - services/**
-            - .github/workflows/test.yaml
-    pull_request:
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - services/**
+      - .github/workflows/test.yaml
+  pull_request:
+  workflow_dispatch:
 
 jobs:
-    filter:
-        runs-on: ubuntu-22.04
-        outputs:
-            node: ${{ steps.filter.outputs.node }}
-            go: ${{ steps.filter.outputs.go }}
-            react-client: ${{ steps.filter.outputs.react-client }}
-        steps:
-            - name: Checkout code
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+  filter:
+    runs-on: ubuntu-22.04
+    outputs:
+      node: ${{ steps.filter.outputs.node }}
+      go: ${{ steps.filter.outputs.go }}
+      react-client: ${{ steps.filter.outputs.react-client }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-            - name: Filter
-              id: filter
-              uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
-              with:
-                  token: ${{ secrets.GITHUB_TOKEN }}
-                  filters: .github/workflows/utils/file-filters.yaml
+      - name: Filter
+        id: filter
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filters: .github/workflows/utils/file-filters.yaml
 
-    test:
-        runs-on: ubuntu-22.04
-        needs: filter
+  test:
+    runs-on: ubuntu-22.04
+    needs: filter
 
-        strategy:
-            fail-fast: false
-            matrix:
-                include:
-                    - type: node
-                      path: ./capstone/services/node/api-node/
-                      cache: ./capstone/services/node/api-node/package-lock.json
-                      changed: ${{ needs.filter.outputs.node }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - type: node
+            path: ./capstone/services/node/api-node/
+            cache: ./capstone/services/node/api-node/package-lock.json
+            changed: ${{ needs.filter.outputs.node }}
 
-                    - type: go
-                      path: ./capstone/services/go/api-golang/
-                      cache: ./capstone/services/go/api-golang/go.sum
-                      changed: ${{ needs.filter.outputs.go }}
+          - type: go
+            path: ./capstone/services/go/api-golang/
+            cache: ./capstone/services/go/api-golang/go.sum
+            changed: ${{ needs.filter.outputs.go }}
 
-                    - type: react-client
-                      path: ./capstone/services/react/client-react/
-                      cache: ./capstone/services/react/client-react/package-lock.json
-                      changed: ${{ needs.filter.outputs.react-client }}
+          - type: react-client
+            path: ./capstone/services/react/client-react/
+            cache: ./capstone/services/react/client-react/package-lock.json
+            changed: ${{ needs.filter.outputs.react-client }}
 
-        steps:
-            - name: Checkout code
-              if: matrix.changed == 'true'
-              uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+    steps:
+      - name: Checkout code
+        if: matrix.changed == 'true'
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-            # =========================
-            #  Setup Node
-            # =========================
-            - name: Setup Node.js environment
-              if: (matrix.type == 'node' || matrix.type == 'react-client') && matrix.changed
-                  == 'true'
-              uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e #v6.4.0
-              with:
-                  node-version-file: ${{ matrix.path }}package.json
-                  cache: "npm"
-                  cache-dependency-path: ${{ matrix.cache }}
+      # =========================
+      #  Setup Node
+      # =========================
+      - name: Setup Node.js environment
+        if: (matrix.type == 'node' || matrix.type == 'react-client') && matrix.changed
+          == 'true'
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e #v6.4.0
+        with:
+          node-version-file: ${{ matrix.path }}package.json
+          cache: "npm"
+          cache-dependency-path: ${{ matrix.cache }}
 
-            # =========================
-            #  Setup Go
-            # =========================
-            - name: Setup Go environment
-              if: matrix.type == 'go' && matrix.changed == 'true'
-              uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c #v6.4.0
-              with:
-                  go-version-file: ${{ matrix.path }}go.mod
-                  cache-dependency-path: ${{ matrix.cache }}
-                  go-version: "1.22"
+      # =========================
+      #  Setup Go
+      # =========================
+      - name: Setup Go environment
+        if: matrix.type == 'go' && matrix.changed == 'true'
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c #v6.4.0
+        with:
+          go-version-file: ${{ matrix.path }}go.mod
+          cache-dependency-path: ${{ matrix.cache }}
+          go-version: "1.22"
 
-            # =========================
-            #  Setup Task
-            # =========================
-            - name: Setup task binary
-              if: matrix.changed == 'true'
-              uses: supplypike/setup-bin@8365380a806a88e7a0f0d07059b175ca2f5418d7 #v5.0.1
-              with:
-                  uri: "https://github.com/go-task/task/releases/download/v3.50.0/task_linux_amd6\
-                      4.tar.gz"
-                  name: task
-                  version: v3.50.0
+      # =========================
+      #  Setup Task
+      # =========================
+      - name: Setup task binary
+        if: matrix.changed == 'true'
+        uses: supplypike/setup-bin@8365380a806a88e7a0f0d07059b175ca2f5418d7 #v5.0.1
+        with:
+          uri: "https://github.com/go-task/task/releases/download/v3.50.0/task_linux_amd6\
+            4.tar.gz"
+          name: task
+          version: v3.50.0
 
-            # =========================
-            #  Install deps
-            # =========================
-            - name: Install app dependencies
-              if: matrix.changed == 'true'
-              working-directory: ${{ matrix.path }}
-              run: task install-ci
+      # =========================
+      #  Install deps
+      # =========================
+      - name: Install app dependencies
+        if: matrix.changed == 'true'
+        working-directory: ${{ matrix.path }}
+        run: task install-ci
 
-            # =========================
-            #  Run tests
-            # =========================
-            - name: Run tests
-              if: matrix.changed == 'true'
-              working-directory: ${{ matrix.path }}
-              run: task test
+      # =========================
+      #  Run tests
+      # =========================
+      - name: Run tests
+        if: matrix.changed == 'true'
+        working-directory: ${{ matrix.path }}
+        run: task test

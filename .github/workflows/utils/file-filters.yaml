@@ -1,8 +1,8 @@
 node:
-  - 'capstone/services/node/api-node/**'
+  - "capstone/services/node/api-node/**"
 
 go:
-  - 'capstone/services/go/api-golang/**'
+  - "capstone/services/go/api-golang/**"
 
 react-client:
-  - 'capstone/services/react/client-react/**'
+  - "capstone/services/react/client-react/**"
