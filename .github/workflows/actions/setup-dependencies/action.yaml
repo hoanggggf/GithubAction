@@ -1,0 +1,21 @@
+name: Setup dependencies
+description: "Setup tools/dependencies"
+inputs:
+    install-task:
+        description: install if true
+        default: "true"
+    task-version:
+        description: version of task to install
+        default: v3.50.0
+
+runs:
+    using: composite
+    steps:
+        - name: Setup task binary
+          if: ${{inputs.install-task == 'true'}}
+          uses: supplypike/setup-bin@8365380a806a88e7a0f0d07059b175ca2f5418d7 #v5.0.1
+          with:
+              uri: "https://github.com/go-task/task/releases/download/${{inputs.task-version}}/task_linux_amd6\
+                  4.tar.gz"
+              name: task
+              version: ${{inputs.task-version}}

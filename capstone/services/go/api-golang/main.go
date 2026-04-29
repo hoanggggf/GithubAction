@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -21,6 +22,7 @@ func init() {
 		databaseUrl = string(content)
 	}
 
+	fmt.Println("DATABASE URL:", databaseUrl)
 	errDB := database.InitDB(databaseUrl)
 	if errDB != nil {
 		log.Fatalf("⛔ Unable to connect to database: %v\n", errDB)

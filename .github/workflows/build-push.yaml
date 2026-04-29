@@ -1,0 +1,90 @@
+name: Build and push container images
+
+on: workflow_dispatch
+
+jobs:
+  filter:
+    runs-on: ubuntu-22.04
+    outputs:
+      node: ${{ steps.filter.outputs.node }}
+      go: ${{ steps.filter.outputs.go }}
+      react-client: ${{ steps.filter.outputs.react-client }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Filter changed services
+        id: filter
+        uses: dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d #v4.0.1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          filters: .github/workflows/utils/file-filters.yaml
+
+  build-push-container-images:
+    needs: filter
+    runs-on: ubuntu-22.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - type: node
+            path: ./capstone/services/node/api-node
+            changed: ${{ needs.filter.outputs.node }}
+
+          - type: go
+            path: ./capstone/services/go/api-golang
+            changed: ${{ needs.filter.outputs.go }}
+
+          - type: react-client
+            path: ./capstone/services/react/client-react
+            changed: ${{ needs.filter.outputs.react-client }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+
+      - name: Setup dependencies
+        uses: ./.github/workflows/actions/setup-dependencies
+
+      - name: Auth to docker hub
+        if: matrix.changed == 'true' && !env.ACT
+        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 #v4.1.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      # - name: Docker Setup QEMU
+      #   uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a #v4.0.0
+
+      # - name: Docker Setup Buildx
+      #   uses: docker/setup-buildx-action@4d04d5d9486b7bd6fa91e7baf45bbb4f8b9deedd #v4.0.0   
+
+      - name: Compute image tag
+        id: image-tag
+        env:
+          ENVIROMENT: production
+          SERVICE: ${{matrix.type}}
+        run: |
+          cd ${{ matrix.path }}
+          version=$(task utils:generate-version -- $SERVICE )
+          image_tag=$(task utils:generate-version-tag -- $SERVICE )
+
+          echo "IMAGE_TAG=${image_tag}" >> $GITHUB_OUTPUT 
+          echo "VERSION=${version}" >> $GITHUB_OUTPUT
+          #TODO: generate the actual version/tag
+
+          echo "IMAGE_TAG=${image_tag}"
+          echo "VERSION=${version}"
+      # - name: build and push container image
+      #   if: matrix.changed == 'true'
+      #   uses: docker/build-push-action@bcafcacb16a39f128d818304e6c9c0c18556b85f #v4.0.0
+      #   with:
+      #     context: ${{ matrix.path }}
+      #     file: ${{ matrix.path }}/Dockerfile
+      #     push: ${{!env.ACT}}
+      #     tags: ${{ steps.image-tag.outputs.image_tag }}
+      #     platform: linux/amd64
+      #     cache-from: type=gha
+      #     cache-to: type=gha,mode=max
